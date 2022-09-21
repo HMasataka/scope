@@ -39,20 +39,20 @@ type sqlboilerModel interface {
 	deletable
 }
 
-func NewClient(db transactor.ConnectionProvider, tx transactor.Transactor) *client {
-	return &client{
+func NewClient(db transactor.ConnectionProvider, tx transactor.Transactor) *Client {
+	return &Client{
 		DB: db,
 		TX: tx,
 	}
 }
 
-type client struct {
+type Client struct {
 	suite.Suite
 	DB transactor.ConnectionProvider
 	TX transactor.Transactor
 }
 
-func (c *client) Scoped(ctx context.Context, fn func(ctx context.Context)) {
+func (c *Client) Scoped(ctx context.Context, fn func(ctx context.Context)) {
 	s := &scope{}
 	ctx = withScope(ctx, s)
 	defer func() {
@@ -65,7 +65,7 @@ func (c *client) Scoped(ctx context.Context, fn func(ctx context.Context)) {
 	fn(ctx)
 }
 
-func (c *client) Insert(ctx context.Context, i sqlboilerModel) {
+func (c *Client) Insert(ctx context.Context, i sqlboilerModel) {
 	conn := c.DB.CurrentConnection(ctx)
 
 	cs := currentScope(ctx)
@@ -75,7 +75,7 @@ func (c *client) Insert(ctx context.Context, i sqlboilerModel) {
 	c.Assert().NoError(err)
 }
 
-func (c *client) DeleteRows(ctx context.Context, deletables ...deletable) error {
+func (c *Client) DeleteRows(ctx context.Context, deletables ...deletable) error {
 	conn := c.DB.CurrentConnection(ctx)
 
 	return c.TX.Required(ctx, func(ctx context.Context) error {

@@ -2,8 +2,11 @@ package scope
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/HMasataka/transactor"
+	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -48,8 +51,43 @@ func NewClient(db transactor.ConnectionProvider, tx transactor.Transactor) *Clie
 
 type Client struct {
 	suite.Suite
-	DB transactor.ConnectionProvider
-	TX transactor.Transactor
+	conn *sql.DB
+	DB   transactor.ConnectionProvider
+	TX   transactor.Transactor
+}
+
+func connectDB() *sql.DB {
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		panic(err)
+	}
+	c := mysql.Config{
+		DBName:    "db",
+		User:      "user",
+		Passwd:    "password",
+		Addr:      "localhost:3306",
+		Net:       "tcp",
+		ParseTime: true,
+		Collation: "utf8mb4_unicode_ci",
+		Loc:       jst,
+	}
+	db, err := sql.Open("mysql", c.FormatDSN())
+	if err != nil {
+		panic(err)
+	}
+
+	return db
+}
+
+func (c *Client) Init() {
+	c.conn = connectDB()
+	c.DB = transactor.NewConnectionProvider(c.conn)
+	c.TX = transactor.NewTransactor(c.DB)
+}
+
+func (c *Client) Term() {
+	err := c.conn.Close()
+	c.Assert().NoError(err)
 }
 
 func (c *Client) Scoped(ctx context.Context, fn func(ctx context.Context)) {

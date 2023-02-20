@@ -43,11 +43,8 @@ type sqlboilerModel interface {
 	deletable
 }
 
-func NewClient(db rdbms.ConnectionProvider, tx transactor.Transactor) *Client {
-	return &Client{
-		DB: db,
-		TX: tx,
-	}
+func NewClient() *Client {
+	return &Client{}
 }
 
 type Client struct {

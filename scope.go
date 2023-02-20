@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/HMasataka/transactor"
+	"github.com/HMasataka/transactor/rdbms"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -42,7 +43,7 @@ type sqlboilerModel interface {
 	deletable
 }
 
-func NewClient(db transactor.ConnectionProvider, tx transactor.Transactor) *Client {
+func NewClient(db rdbms.ConnectionProvider, tx transactor.Transactor) *Client {
 	return &Client{
 		DB: db,
 		TX: tx,
@@ -52,7 +53,7 @@ func NewClient(db transactor.ConnectionProvider, tx transactor.Transactor) *Clie
 type Client struct {
 	suite.Suite
 	conn *sql.DB
-	DB   transactor.ConnectionProvider
+	Conn rdbms.ClientProvider
 	TX   transactor.Transactor
 }
 
@@ -81,8 +82,9 @@ func connectDB() *sql.DB {
 
 func (c *Client) Init() {
 	c.conn = connectDB()
-	c.DB = transactor.NewConnectionProvider(c.conn)
-	c.TX = transactor.NewTransactor(c.DB)
+	db := rdbms.NewConnectionProvider(c.conn)
+	c.Conn = rdbms.NewClientProvider(db)
+	c.TX = rdbms.NewTransactor(db)
 }
 
 func (c *Client) Term() {
@@ -104,7 +106,7 @@ func (c *Client) Scoped(ctx context.Context, fn func(ctx context.Context)) {
 }
 
 func (c *Client) Insert(ctx context.Context, i sqlboilerModel) {
-	conn := c.DB.CurrentConnection(ctx)
+	conn := c.Conn.CurrentClient(ctx)
 
 	cs := currentScope(ctx)
 	cs.deletables = append(cs.deletables, i)
@@ -114,7 +116,7 @@ func (c *Client) Insert(ctx context.Context, i sqlboilerModel) {
 }
 
 func (c *Client) DeleteRows(ctx context.Context, deletables ...deletable) error {
-	conn := c.DB.CurrentConnection(ctx)
+	conn := c.Conn.CurrentClient(ctx)
 
 	return c.TX.Required(ctx, func(ctx context.Context) error {
 		for _, deletable := range deletables {

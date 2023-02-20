@@ -55,6 +55,8 @@ github.com/DATA-DOG/go-sqlmock v1.4.1 h1:ThlnYciV1iM/V0OSF/dtkqWb6xo5qITT1TJBG1M
 github.com/DATA-DOG/go-sqlmock v1.4.1/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/HMasataka/transactor v0.0.0-20220921094735-a0d00aba25b3 h1:QEY1uz/a1vwQiuoFA8mEJL3yIwghCb8NKuZS7xW8xPw=
 github.com/HMasataka/transactor v0.0.0-20220921094735-a0d00aba25b3/go.mod h1:NVpMI8NgMs/F5Auhn6H+mJiJHhuYE2y4ImM91GX57GQ=
+github.com/HMasataka/transactor v0.0.0-20230220045329-82dc35ff3dd1 h1:P7cLZLWVWb1G9DuU0R4JLvsED8xhPHcwRZ50oVke0jE=
+github.com/HMasataka/transactor v0.0.0-20230220045329-82dc35ff3dd1/go.mod h1:Mb6acmXdnJzzOYMaUksmKRZDWvp5lK2LxImaYSu0hiY=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/Masterminds/sprig/v3 v3.2.2/go.mod h1:UoaO7Yp8KlPnJIYWTFkMaqPUYKTfGFPhxNuwnnxkKlk=

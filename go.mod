@@ -3,7 +3,7 @@ module github.com/HMasataka/scope
 go 1.19
 
 require (
-	github.com/HMasataka/transactor v0.0.0-20220921094735-a0d00aba25b3
+	github.com/HMasataka/transactor v0.0.0-20230220045329-82dc35ff3dd1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12

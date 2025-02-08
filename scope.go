@@ -15,7 +15,7 @@ import (
 const contextScopeKey = "current_scope"
 
 type scope struct {
-	deletables []deletable
+	deletables []any
 }
 
 func withScope(ctx context.Context, s *scope) context.Context {
@@ -38,9 +38,18 @@ type deletable interface {
 	Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error)
 }
 
+type softDeletable interface {
+	Delete(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error)
+}
+
 type sqlboilerModel interface {
 	insertable
 	deletable
+}
+
+type sqlboilerSoftModel interface {
+	insertable
+	softDeletable
 }
 
 func NewClient() *Client {
@@ -112,16 +121,38 @@ func (c *Client) Insert(ctx context.Context, i sqlboilerModel) {
 	c.Assert().NoError(err)
 }
 
-func (c *Client) DeleteRows(ctx context.Context, deletables ...deletable) error {
+func (c *Client) InsertSoftModel(ctx context.Context, i sqlboilerSoftModel) {
+	conn := c.Conn.CurrentClient(ctx)
+
+	cs := currentScope(ctx)
+	cs.deletables = append(cs.deletables, i)
+
+	err := i.Insert(ctx, conn, boil.Infer())
+	c.Assert().NoError(err)
+}
+
+func (c *Client) DeleteRows(ctx context.Context, deletables ...any) error {
 	conn := c.Conn.CurrentClient(ctx)
 
 	return c.TX.Required(ctx, func(ctx context.Context) error {
-		for _, deletable := range deletables {
-			_, err := deletable.Delete(ctx, conn)
-			if err != nil {
-				return err
+		for _, de := range deletables {
+			d, ok := de.(deletable)
+			if ok {
+				_, err := d.Delete(ctx, conn)
+				if err != nil {
+					return err
+				}
+			}
+
+			sd, ok := de.(softDeletable)
+			if ok {
+				_, err := sd.Delete(ctx, conn, true)
+				if err != nil {
+					return err
+				}
 			}
 		}
+
 		return nil
 	})
 }

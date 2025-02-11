@@ -135,8 +135,8 @@ func (c *Client) DeleteRows(ctx context.Context, deletables ...any) error {
 	conn := c.Conn.CurrentClient(ctx)
 
 	return c.TX.Required(ctx, func(ctx context.Context) error {
-		for _, de := range deletables {
-			d, ok := de.(deletable)
+		for i := len(deletables); i > 0; i-- {
+			d, ok := deletables[i-1].(deletable)
 			if ok {
 				_, err := d.Delete(ctx, conn)
 				if err != nil {
@@ -144,7 +144,7 @@ func (c *Client) DeleteRows(ctx context.Context, deletables ...any) error {
 				}
 			}
 
-			sd, ok := de.(softDeletable)
+			sd, ok := deletables[i-1].(softDeletable)
 			if ok {
 				_, err := sd.Delete(ctx, conn, true)
 				if err != nil {

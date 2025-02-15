@@ -69,7 +69,7 @@ type DatabaseConnecter interface {
 
 type DefaultDatabaseConnector struct{}
 
-func (d *DefaultDatabaseConnector) Connect() (*sql.DB, error) {
+func (d DefaultDatabaseConnector) Connect() (*sql.DB, error) {
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return nil, err

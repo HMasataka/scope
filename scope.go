@@ -63,11 +63,18 @@ type Client struct {
 	TX   transactor.Transactor
 }
 
-func connectDB() *sql.DB {
+type DatabaseConnecter interface {
+	Connect() (*sql.DB, error)
+}
+
+type DefaultDatabaseConnector struct{}
+
+func (d *DefaultDatabaseConnector) Connect() (*sql.DB, error) {
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+
 	c := mysql.Config{
 		DBName:    "db",
 		User:      "user",
@@ -78,19 +85,27 @@ func connectDB() *sql.DB {
 		Collation: "utf8mb4_unicode_ci",
 		Loc:       jst,
 	}
+
 	db, err := sql.Open("mysql", c.FormatDSN())
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return db
+	return db, nil
 }
 
-func (c *Client) Init() {
-	c.conn = connectDB()
+func (c *Client) Init(dbConnector DatabaseConnecter) error {
+	conn, err := dbConnector.Connect()
+	if err != nil {
+		return err
+	}
+
+	c.conn = conn
 	db := rdbms.NewConnectionProvider(c.conn)
 	c.Conn = rdbms.NewClientProvider(db)
 	c.TX = rdbms.NewTransactor(db)
+
+	return nil
 }
 
 func (c *Client) Term() {
